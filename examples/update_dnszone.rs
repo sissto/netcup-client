@@ -10,10 +10,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // login
     let client = NetcupClient::new(api_key, customer_no);
     let client = client.login(api_password).await?;
-    println!("session id: {}", client.get_session_id());
+
+    // get dns zone
+    let mut dns_zone = client.get_dns_zone("example.tld").await?;
+    println!("{:?}", dns_zone);
+
+    // change dns zone
+    dns_zone.ttl = "86400".to_string();
+
+    // update dns zone
+    dns_zone = client.update_dns_zone(dns_zone).await?;
+    println!("{:?}", dns_zone);
 
     // logout
-    let client = client.logout().await?;
-    println!("session id: {}", client.get_session_id());
+    client.logout().await?;
     Ok(())
 }

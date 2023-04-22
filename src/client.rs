@@ -3,11 +3,13 @@ use std::{error::Error, marker::PhantomData};
 
 use crate::{
     actions::{
+        dnszone::*,
         login::LoginAction,
         logout::LogoutAction,
         request::{RequestAction, RequestActionBuilder},
     },
     models::{
+        dnszone::DnsZone,
         login::LoginData,
         responses::{NCDataResponse, NCResponse},
     },
@@ -120,5 +122,31 @@ impl NetcupClient<Authorized> {
             state: PhantomData,
         };
         Ok(client)
+    }
+
+    pub async fn get_dns_zone(&self, domain_name: &str) -> Result<DnsZone, Box<dyn Error>> {
+        let param = InfoDnsZoneAction::new(
+            self.customer_no,
+            &self.api_key,
+            &self.session_id,
+            domain_name,
+        );
+        let request = RequestActionBuilder::build("infoDnsZone", param);
+
+        let response = self.send::<InfoDnsZoneAction>(&request).await?;
+        let data = self.get_response_data::<DnsZone>(&response.to_string())?;
+
+        Ok(data.data)
+    }
+
+    pub async fn update_dns_zone(&self, dns_zone: DnsZone) -> Result<DnsZone, Box<dyn Error>> {
+        let param =
+            UpdateDnsZoneAction::new(self.customer_no, &self.api_key, &self.session_id, dns_zone);
+        let request = RequestActionBuilder::build("updateDnsZone", param);
+
+        let response = self.send::<UpdateDnsZoneAction>(&request).await?;
+        let data = self.get_response_data::<DnsZone>(&response.to_string())?;
+
+        Ok(data.data)
     }
 }

@@ -6,5 +6,6 @@ pub mod prelude {
     use super::*;
 
     pub use client::*;
+    pub use models::dnsrecord::DnsRecord;
     pub use models::dnszone::*;
 }

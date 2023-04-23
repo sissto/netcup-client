@@ -3,16 +3,18 @@ use std::{error::Error, marker::PhantomData};
 
 use crate::{
     actions::{
+        dnsrecord::*,
         dnszone::*,
         login::LoginAction,
         logout::LogoutAction,
         request::{RequestAction, RequestActionBuilder},
     },
     models::{
-        dnszone::DnsZone,
+        dnsrecord::DnsRecordSet,
         login::LoginData,
         responses::{NCDataResponse, NCResponse},
     },
+    prelude::{DnsRecord, DnsZone},
 };
 
 pub struct Unauthorized;
@@ -75,7 +77,7 @@ impl<State> NetcupClient<State> {
         let result = serde_json::from_str::<NCDataResponse<Data>>(value);
         if result.is_err() {
             let err_result = self.get_response(value)?;
-            panic!("{}", err_result.short_message);
+            panic!("{} - {}", err_result.short_message, err_result.long_message);
         }
         let data = result.expect("JSON was not well-formatted");
         Ok(data)
@@ -112,7 +114,7 @@ impl NetcupClient<Authorized> {
         let data = self.get_response(&response.to_string())?;
 
         if data.status.eq("error") {
-            panic!("{}", data.short_message);
+            panic!("{} - {}", data.short_message, data.long_message);
         }
 
         let client = NetcupClient {
@@ -148,5 +150,53 @@ impl NetcupClient<Authorized> {
         let data = self.get_response_data::<DnsZone>(&response.to_string())?;
 
         Ok(data.data)
+    }
+
+    pub async fn get_dns_records(
+        &self,
+        domain_name: &str,
+    ) -> Result<Vec<DnsRecord>, Box<dyn Error>> {
+        let param = InfoDnsRecordsAction::new(
+            self.customer_no,
+            &self.api_key,
+            &self.session_id,
+            domain_name,
+        );
+        let request = RequestActionBuilder::build("infoDnsRecords", param);
+
+        let response = self.send::<InfoDnsRecordsAction>(&request).await?;
+        let data = self.get_response_data::<DnsRecordSet>(&response.to_string())?;
+
+        Ok(data.data.records)
+    }
+
+    pub async fn update_dns_records(
+        &self,
+        domain_name: &str,
+        records: Vec<DnsRecord>,
+    ) -> Result<(), Box<dyn Error>> {
+        if records.is_empty() {
+            panic!("No DNS records provided.");
+        } else if records.len() > 20 {
+            panic!("More than 20 entries are currently not supported.")
+        }
+
+        let param = UpdateDnsRecordsAction::new(
+            self.customer_no,
+            &self.api_key,
+            &self.session_id,
+            domain_name,
+            DnsRecordSet { records },
+        );
+        let request = RequestActionBuilder::build("updateDnsRecords", param);
+
+        let response = self.send::<UpdateDnsRecordsAction>(&request).await?;
+        let data = self.get_response(&response.to_string())?;
+
+        if data.status.eq("error") {
+            panic!("{} - {}", data.short_message, data.long_message);
+        }
+
+        Ok(())
     }
 }

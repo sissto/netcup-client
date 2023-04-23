@@ -80,6 +80,6 @@ mod tests {
         let param = UpdateDnsZoneAction::new(4711, "abc123", "session4711", dns_zone);
         let request = RequestActionBuilder::build("updatednszone", param);
         let json = serde_json::to_string(&request);
-        assert_eq!("{\"action\":\"updatednszone\",\"param\":{\"customernumber\":4711,\"apikey\":\"abc123\",\"apisessionid\":\"session4711\",\"domainname\":\"example.tld\",\"dnszone\":{\"name\":\"example.tld\",\"ttl\":\"86400\",\"serial\":\"1234567\",\"refresh\":\"28800\",\"retry\":\"7200\",\"expire\":\"1209600\",\"dns_sec_status\":false}}}", json.unwrap());
+        assert_eq!("{\"action\":\"updatednszone\",\"param\":{\"customernumber\":4711,\"apikey\":\"abc123\",\"apisessionid\":\"session4711\",\"domainname\":\"example.tld\",\"dnszone\":{\"name\":\"example.tld\",\"ttl\":\"86400\",\"serial\":\"1234567\",\"refresh\":\"28800\",\"retry\":\"7200\",\"expire\":\"1209600\",\"dnssecstatus\":false}}}", json.unwrap());
     }
 }

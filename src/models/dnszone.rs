@@ -8,6 +8,6 @@ pub struct DnsZone {
     pub refresh: String,
     pub retry: String,
     pub expire: String,
-    #[serde(rename(deserialize = "dnssecstatus"))]
+    #[serde(rename = "dnssecstatus")]
     pub dns_sec_status: bool,
 }

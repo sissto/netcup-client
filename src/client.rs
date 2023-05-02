@@ -24,13 +24,13 @@ const BASE_URL: &str = "https://ccp.netcup.net/run/webservice/servers/endpoint.p
 
 pub struct NetcupClient<State = Unauthorized> {
     api_key: String,
-    customer_no: i64,
+    customer_no: u64,
     session_id: String,
     state: PhantomData<State>,
 }
 
 impl NetcupClient {
-    pub fn new(api_key: &str, customer_no: i64) -> Self {
+    pub fn new(api_key: &str, customer_no: u64) -> Self {
         NetcupClient {
             api_key: api_key.to_owned(),
             customer_no,

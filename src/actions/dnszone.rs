@@ -5,7 +5,7 @@ use crate::prelude::DnsZone;
 #[derive(Serialize)]
 pub struct InfoDnsZoneAction {
     #[serde(rename(serialize = "customernumber"))]
-    customer_no: i64,
+    customer_no: u64,
     #[serde(rename(serialize = "apikey"))]
     api_key: String,
     #[serde(rename(serialize = "apisessionid"))]
@@ -15,7 +15,7 @@ pub struct InfoDnsZoneAction {
 }
 
 impl InfoDnsZoneAction {
-    pub fn new(customer_no: i64, api_key: &str, api_session_id: &str, domain_name: &str) -> Self {
+    pub fn new(customer_no: u64, api_key: &str, api_session_id: &str, domain_name: &str) -> Self {
         Self {
             customer_no,
             api_key: api_key.to_owned(),
@@ -28,7 +28,7 @@ impl InfoDnsZoneAction {
 #[derive(Serialize)]
 pub struct UpdateDnsZoneAction {
     #[serde(rename(serialize = "customernumber"))]
-    customer_no: i64,
+    customer_no: u64,
     #[serde(rename(serialize = "apikey"))]
     api_key: String,
     #[serde(rename(serialize = "apisessionid"))]
@@ -40,7 +40,7 @@ pub struct UpdateDnsZoneAction {
 }
 
 impl UpdateDnsZoneAction {
-    pub fn new(customer_no: i64, api_key: &str, api_session_id: &str, dns_zone: DnsZone) -> Self {
+    pub fn new(customer_no: u64, api_key: &str, api_session_id: &str, dns_zone: DnsZone) -> Self {
         Self {
             customer_no,
             api_key: api_key.to_owned(),

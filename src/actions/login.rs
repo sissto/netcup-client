@@ -3,7 +3,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 pub struct LoginAction {
     #[serde(rename(serialize = "customernumber"))]
-    customer_no: i64,
+    customer_no: u64,
     #[serde(rename(serialize = "apikey"))]
     api_key: String,
     #[serde(rename(serialize = "apipassword"))]
@@ -11,7 +11,7 @@ pub struct LoginAction {
 }
 
 impl LoginAction {
-    pub fn new(customer_no: i64, api_key: &str, api_password: &str) -> Self {
+    pub fn new(customer_no: u64, api_key: &str, api_password: &str) -> Self {
         Self {
             customer_no,
             api_key: api_key.to_owned(),

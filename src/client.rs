@@ -1,5 +1,6 @@
+use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
-use std::{error::Error, marker::PhantomData};
+use std::marker::PhantomData;
 
 use crate::{
     actions::{
@@ -45,10 +46,7 @@ impl<State> NetcupClient<State> {
         self.session_id.to_string()
     }
 
-    async fn send<Action>(
-        &self,
-        request: &RequestAction<Action>,
-    ) -> Result<serde_json::Value, Box<dyn Error>>
+    async fn send<Action>(&self, request: &RequestAction<Action>) -> Result<serde_json::Value>
     where
         Action: Serialize,
     {
@@ -62,22 +60,19 @@ impl<State> NetcupClient<State> {
         Ok(response)
     }
 
-    fn get_response(&self, value: &str) -> Result<NCResponse, Box<dyn Error>> {
+    fn get_response(&self, value: &str) -> Result<NCResponse> {
         let data = serde_json::from_str::<NCResponse>(value).expect("JSON was not well-formatted");
         Ok(data)
     }
 
-    fn get_response_data<'a, Data>(
-        &self,
-        value: &'a str,
-    ) -> Result<NCDataResponse<Data>, Box<dyn Error>>
+    fn get_response_data<'a, Data>(&self, value: &'a str) -> Result<NCDataResponse<Data>>
     where
         Data: Deserialize<'a>,
     {
         let result = serde_json::from_str::<NCDataResponse<Data>>(value);
         if result.is_err() {
             let err_result = self.get_response(value)?;
-            panic!("{} - {}", err_result.short_message, err_result.long_message);
+            bail!("{} - {}", err_result.short_message, err_result.long_message);
         }
         let data = result.expect("JSON was not well-formatted");
         Ok(data)
@@ -85,10 +80,7 @@ impl<State> NetcupClient<State> {
 }
 
 impl NetcupClient<Unauthorized> {
-    pub async fn login(
-        self,
-        api_password: &str,
-    ) -> Result<NetcupClient<Authorized>, Box<dyn Error>> {
+    pub async fn login(self, api_password: &str) -> Result<NetcupClient<Authorized>> {
         let param = LoginAction::new(self.customer_no, &self.api_key, api_password);
         let request = RequestActionBuilder::build("login", param);
 
@@ -106,7 +98,7 @@ impl NetcupClient<Unauthorized> {
 }
 
 impl NetcupClient<Authorized> {
-    pub async fn logout(self) -> Result<NetcupClient<Unauthorized>, Box<dyn Error>> {
+    pub async fn logout(self) -> Result<NetcupClient<Unauthorized>> {
         let param = LogoutAction::new(self.customer_no, &self.api_key, &self.session_id);
         let request = RequestActionBuilder::build("logout", param);
 
@@ -114,7 +106,7 @@ impl NetcupClient<Authorized> {
         let data = self.get_response(&response.to_string())?;
 
         if data.status.eq("error") {
-            panic!("{} - {}", data.short_message, data.long_message);
+            bail!("{} - {}", data.short_message, data.long_message);
         }
 
         let client = NetcupClient {
@@ -126,7 +118,7 @@ impl NetcupClient<Authorized> {
         Ok(client)
     }
 
-    pub async fn get_dns_zone(&self, domain_name: &str) -> Result<DnsZone, Box<dyn Error>> {
+    pub async fn get_dns_zone(&self, domain_name: &str) -> Result<DnsZone> {
         let param = InfoDnsZoneAction::new(
             self.customer_no,
             &self.api_key,
@@ -141,7 +133,7 @@ impl NetcupClient<Authorized> {
         Ok(data.data)
     }
 
-    pub async fn update_dns_zone(&self, dns_zone: DnsZone) -> Result<DnsZone, Box<dyn Error>> {
+    pub async fn update_dns_zone(&self, dns_zone: DnsZone) -> Result<DnsZone> {
         let param =
             UpdateDnsZoneAction::new(self.customer_no, &self.api_key, &self.session_id, dns_zone);
         let request = RequestActionBuilder::build("updateDnsZone", param);
@@ -152,10 +144,7 @@ impl NetcupClient<Authorized> {
         Ok(data.data)
     }
 
-    pub async fn get_dns_records(
-        &self,
-        domain_name: &str,
-    ) -> Result<Vec<DnsRecord>, Box<dyn Error>> {
+    pub async fn get_dns_records(&self, domain_name: &str) -> Result<Vec<DnsRecord>> {
         let param = InfoDnsRecordsAction::new(
             self.customer_no,
             &self.api_key,
@@ -174,11 +163,11 @@ impl NetcupClient<Authorized> {
         &self,
         domain_name: &str,
         records: Vec<DnsRecord>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<()> {
         if records.is_empty() {
-            panic!("No DNS records provided.");
+            bail!("No DNS records provided.");
         } else if records.len() > 20 {
-            panic!("More than 20 entries are currently not supported.")
+            bail!("More than 20 entries are currently not supported.")
         }
 
         let param = UpdateDnsRecordsAction::new(
@@ -194,7 +183,7 @@ impl NetcupClient<Authorized> {
         let data = self.get_response(&response.to_string())?;
 
         if data.status.eq("error") {
-            panic!("{} - {}", data.short_message, data.long_message);
+            bail!("{} - {}", data.short_message, data.long_message);
         }
 
         Ok(())

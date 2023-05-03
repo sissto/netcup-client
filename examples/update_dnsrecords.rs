@@ -1,8 +1,8 @@
+use anyhow::Result;
 use netcup_client::prelude::*;
-use std::error::Error;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<()> {
     let customer_no = 4711;
     let api_key = "api_key";
     let api_password = "api_password";

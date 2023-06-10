@@ -3,14 +3,12 @@ name = "netcup-client"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-authors = ["sissto <contact@sissto.com>"]
+authors = ["sissto"]
 description = "Wrapper client for the netcup DNS API"
 readme = "README.md"
 homepage = "https://github.com/sissto/netcup-client"
 repository = "https://github.com/sissto/netcup-client"
 keywords = ["netcup", "dns", "api"]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.71"
